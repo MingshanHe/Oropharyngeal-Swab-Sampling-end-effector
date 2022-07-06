@@ -39,6 +39,7 @@
 import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Wrench
 import tensorflow as tf 
 import cv2
 import numpy as np
@@ -99,7 +100,7 @@ def NNpostprocess(img,pred,visualize=True):
 
 def main():
     center=[400,270]
-    Twist_Pub = rospy.Publisher('/twist', Twist, queue_size=2)
+    Twist_Pub = rospy.Publisher('/twist', Wrench, queue_size=2)
     rospy.init_node('image_process', anonymous=True)
     rate = rospy.Rate(5) # 5hz
 
@@ -128,20 +129,59 @@ def main():
 
         if radius>10  and y-center[1]>20:
             cv2.putText(img, "go", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            print("------")
+            print(center)
+            print(y)
+            print((y-center[1]))
         elif radius>10 and center[1]-y>20:
             cv2.putText(img, "down", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
+            print("------")
+            print(center)
+            print(y)
+            print((center[1]-y))
         if radius>10 and x-center[0]>20:
             cv2.putText(img, "left", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            print("------")
+            print(center)
+            print(x)
+            print((x-center[0]))
+            wrench = Wrench()
+            wrench.force.x = (x-center[0])
+            wrench.force.y = 0
+            wrench.force.z = 0
+            wrench.torque.x = 0
+            wrench.torque.y = 0
+            wrench.torque.z = 0
+            Twist_Pub.publish(wrench)
+            rate.sleep()
         elif radius>10 and center[0]-x>20:
             cv2.putText(img, "right", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            print("------")
+            print(center)
+            print(x)
+            print((center[0]-x))
+            wrench = Wrench()
+            wrench.force.x = (center[0]-x)
+            wrench.force.y = 0
+            wrench.force.z = 0
+            wrench.torque.x = 0
+            wrench.torque.y = 0
+            wrench.torque.z = 0
+            Twist_Pub.publish(wrench)
+            rate.sleep()
 
         if radius>10 and radius-r>10:
             cv2.putText(img, "bottom", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            print("------")
+            print(radius)
+            print(r)
         elif radius>10 and r-radius>10:
             cv2.putText(img, "up", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            print("------")
+            print(radius)
+            print(r)
 
-        print(center,x,y)
+        # print(center,x,y)
 #         print(x,y)
         #计算识别到的物体的中心距离触觉机械爪中心的距离，并进行移动
         cv2.imshow('pre', pred)
@@ -154,12 +194,12 @@ def main():
             center=[x,y]
             r=radius
 
-        twist = Twist()
-        twist.linear.x = 10
-        twist.linear.y = 10
-        twist.linear.z = 10
-        Twist_Pub.publish(twist)
-        rate.sleep()
+        
+
+        # twist.linear.x = x - center[0]
+
+
+
 
 if __name__ == '__main__':
     try:
