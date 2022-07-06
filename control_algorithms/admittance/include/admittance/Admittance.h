@@ -14,6 +14,7 @@
 #include "cartesian_state_msgs/PoseTwist.h"
 #include "trajectory_msgs/JointTrajectory.h"
 #include "geometry_msgs/WrenchStamped.h"
+#include "geometry_msgs/Wrench.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "sensor_msgs/LaserScan.h"
 #include <tf/transform_datatypes.h>
@@ -110,7 +111,7 @@ private:
   void compute_admittance();
   // Callbacks
   void state_arm_callback(const cartesian_state_msgs::PoseTwistConstPtr msg);
-  void state_wrench_callback(const geometry_msgs::WrenchStampedConstPtr msg);
+  void state_wrench_callback(const geometry_msgs::WrenchConstPtr msg);
   // 
   void send_commands_to_robot();
 
