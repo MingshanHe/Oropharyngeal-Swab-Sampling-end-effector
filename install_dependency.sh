@@ -6,3 +6,4 @@ sudo apt-get install -y ros-${ros_distro}-speed-scaling-state-controller
 sudo apt-get install -y ros-${ros_distro}-ur-msgs
 sudo apt-get install -y ros-${ros_distro}-pass-through-controllers
 sudo apt-get install -y ros-${ros_distro}-ur-client-library
+sudo apt-get install -y ros-${ros_distro}-force-torque-sensor*
