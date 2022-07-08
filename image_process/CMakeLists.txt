@@ -163,6 +163,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/FCN_ROS.py
+  scripts/realsense.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
