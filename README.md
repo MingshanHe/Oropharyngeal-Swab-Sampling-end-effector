@@ -132,4 +132,12 @@ rviz -d $(rospack find mir_navigation)/rviz/navigation.rviz
 
 ```bash
 roslaunch ur_robot_driver ur5_bringup.launch robot_ip:=192.168.0.103 kinematics_config:=$(rospack find ur_calibration)/etc/ur5_robot_calibration.yaml
+
+roslaunch admittance Admittance.launch 
+
+
+roslaunch realsense2_camera rs_camera.launch filters:=pointcloud  align_depth:=true
+
+ rosrun image_process realsense.py
+
 ```
