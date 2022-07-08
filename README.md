@@ -127,3 +127,9 @@ rviz -d $(rospack find mir_navigation)/rviz/navigation.rviz
 
 ![3](Image/Hybrid_Position_Force_Control.gif)
 
+
+
+
+```bash
+roslaunch ur_robot_driver ur5_bringup.launch robot_ip:=192.168.0.103 kinematics_config:=$(rospack find ur_calibration)/etc/ur5_robot_calibration.yaml
+```
