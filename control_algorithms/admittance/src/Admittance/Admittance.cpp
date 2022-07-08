@@ -163,28 +163,28 @@ void Admittance::state_wrench_callback(
     //                     msg->wrench.torque.z,
     //                     msg->wrench.torque.y,
     //                     msg->wrench.torque.x;
-    float force_thres_lower_limit_ = 100;
-    float force_thres_upper_limit_ = 200;
+    float force_thres_lower_limit_ = 0;
+    float force_thres_upper_limit_ = 10;
     if(fabs(wrench_ft_frame(0)) < force_thres_lower_limit_ || fabs(wrench_ft_frame(0)) > force_thres_upper_limit_){wrench_ft_frame(0) = 0;}
     else{
       if(wrench_ft_frame(0) > 0){wrench_ft_frame(0) -= force_thres_lower_limit_;}
       else{wrench_ft_frame(0) += force_thres_lower_limit_;}
-      wrench_ft_frame(0) = (1 - 0.2)*force_x_pre + 0.2*wrench_ft_frame(0);
-      force_x_pre = wrench_ft_frame(0)*0.1;
+      // wrench_ft_frame(0) = (1 - 0.2)*force_x_pre + 0.2*wrench_ft_frame(0);
+      // force_x_pre = wrench_ft_frame(0);
     }
     if(fabs(wrench_ft_frame(1)) < force_thres_lower_limit_ || fabs(wrench_ft_frame(1)) > force_thres_upper_limit_){wrench_ft_frame(1) = 0;}
     else{
       if(wrench_ft_frame(1) > 0){wrench_ft_frame(1) -= force_thres_lower_limit_;}
       else{wrench_ft_frame(1) += force_thres_lower_limit_;}
-      wrench_ft_frame(1) = (1 - 0.2)*force_y_pre + 0.2*wrench_ft_frame(1);
-      force_y_pre = wrench_ft_frame(1)*0.1;
+      // wrench_ft_frame(1) = (1 - 0.2)*force_y_pre + 0.2*wrench_ft_frame(1);
+      // force_y_pre = wrench_ft_frame(1);
     }
     if(fabs(wrench_ft_frame(2)) < force_thres_lower_limit_ || fabs(wrench_ft_frame(2)) > force_thres_upper_limit_){wrench_ft_frame(2) = 0;}
     else{
       if(wrench_ft_frame(2) > 0){wrench_ft_frame(2) -= force_thres_lower_limit_;}
       else{wrench_ft_frame(2) += force_thres_lower_limit_;}
-      wrench_ft_frame(2) = (1 - 0.2)*force_z_pre + 0.2*wrench_ft_frame(2);
-      force_z_pre = wrench_ft_frame(2)*0.1;
+      // wrench_ft_frame(2) = (1 - 0.2)*force_z_pre + 0.2*wrench_ft_frame(2);
+      // force_z_pre = wrench_ft_frame(2);
     }
     get_rotation_matrix(rotation_ft_base, listener_ft_, base_link_, end_link_);
     wrench_external_ <<  rotation_ft_base * wrench_ft_frame;
@@ -203,12 +203,12 @@ void Admittance::send_commands_to_robot() {
 
   // }
   geometry_msgs::Twist arm_twist_cmd;
-  arm_twist_cmd.linear.x  = arm_desired_twist_adm_(0)*0.1;
-  arm_twist_cmd.linear.y  = arm_desired_twist_adm_(1)*0.1;
-  arm_twist_cmd.linear.z  = arm_desired_twist_adm_(2)*0.1;
-  arm_twist_cmd.angular.x = arm_desired_twist_adm_(3)*0.1;
-  arm_twist_cmd.angular.y = arm_desired_twist_adm_(4)*0.1;
-  arm_twist_cmd.angular.z = arm_desired_twist_adm_(5)*0.1;
+  arm_twist_cmd.linear.x  = arm_desired_twist_adm_(0)*0.5;
+  arm_twist_cmd.linear.y  = arm_desired_twist_adm_(1)*0.5;
+  arm_twist_cmd.linear.z  = arm_desired_twist_adm_(2)*0.5;
+  arm_twist_cmd.angular.x = arm_desired_twist_adm_(3)*0.5;
+  arm_twist_cmd.angular.y = arm_desired_twist_adm_(4)*0.5;
+  arm_twist_cmd.angular.z = arm_desired_twist_adm_(5)*0.5;
 
   // arm_twist_cmd.linear.x  = arm_desired_twist_adm_(0);
   // arm_twist_cmd.linear.y  = arm_desired_twist_adm_(1);
