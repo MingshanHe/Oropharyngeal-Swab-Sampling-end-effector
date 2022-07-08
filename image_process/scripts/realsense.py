@@ -6,6 +6,7 @@
 
 import rospy
 from std_msgs.msg import String
+from detection_msgs.msg import Detection
 from sensor_msgs.msg import Image, CameraInfo
 import message_filters
 import cv2
@@ -18,6 +19,8 @@ import numpy as np
 LIP_MARGIN = 0.3                # Marginal rate for lip-only image.
 RESIZE = (64,64)                # Final image size
 CROPPED_RADIUS = 30             # Cropped Radius
+
+detection_pub = rospy.Publisher('/detection', Detection, queue_size=2) 
 
 # Face detector and landmark detector
 face_detector = dlib.get_frontal_face_detector()   
@@ -34,6 +37,9 @@ def callback(data1,data2):
     bridge = CvBridge()
     color_image = bridge.imgmsg_to_cv2(data1, 'bgr8')
     depth_image = bridge.imgmsg_to_cv2(data2, '16UC1')
+
+    color_image = cv2.flip(color_image,1,dst=None) #水平镜像
+    depth_image = cv2.flip(depth_image,1,dst=None) #水平镜像
 
     color_image_size = color_image.shape
     # print(sp) : (480, 640, 3)
@@ -77,6 +83,12 @@ def callback(data1,data2):
     cropped_distance = depth_image[int((crop_pos[0]+crop_pos[1])/2),int((crop_pos[2]+crop_pos[3])/2)]
     print(cropped_distance)
 
+    detection = Detection()
+    detection.x = (cropped_center[1] - 240)
+    detection.y = (cropped_center[0] - 320)
+    detection.z = cropped_distance
+    detection_pub.publish(detection)
+    
 
 
     cv2.imshow("cropped", cropped)
@@ -90,7 +102,6 @@ def callback(data1,data2):
     cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
     cv2.imshow('RealSense', images)
     key = cv2.waitKey(1)
-
 
 
 
