@@ -7,6 +7,8 @@
 import rospy
 from std_msgs.msg import String
 from detection_msgs.msg import Detection
+from geometry_msgs.msg import Wrench
+from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image, CameraInfo
 import message_filters
 import cv2
@@ -20,7 +22,7 @@ LIP_MARGIN = 0.3                # Marginal rate for lip-only image.
 RESIZE = (64,64)                # Final image size
 CROPPED_RADIUS = 30             # Cropped Radius
 
-detection_pub = rospy.Publisher('/detection', Detection, queue_size=2) 
+detection_pub = rospy.Publisher('/twist', Wrench, queue_size=2) 
 
 # Face detector and landmark detector
 face_detector = dlib.get_frontal_face_detector()   
@@ -83,11 +85,22 @@ def callback(data1,data2):
     cropped_distance = depth_image[int((crop_pos[0]+crop_pos[1])/2),int((crop_pos[2]+crop_pos[3])/2)]
     print(cropped_distance)
 
-    detection = Detection()
-    detection.x = (cropped_center[1] - 240)
-    detection.y = (cropped_center[0] - 320)
-    detection.z = cropped_distance
-    detection_pub.publish(detection)
+    # detection = Detection()
+    # detection.x = (cropped_center[1] - 240)
+    # detection.y = (cropped_center[0] - 320)
+    # detection.z = cropped_distance
+    # detection_pub.publish(detection)
+
+    twist = Wrench()
+    twist.force.x = -(cropped_center[0] - 240)/48
+    twist.force.y = (cropped_center[1] - 320)/64
+    twist.force.z = 0
+    twist.torque.x = 0
+    twist.torque.y = 0
+    twist.torque.z = 0
+
+
+    detection_pub.publish(twist)
     
 
 
