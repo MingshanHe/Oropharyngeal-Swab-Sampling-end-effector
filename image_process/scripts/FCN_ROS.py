@@ -102,7 +102,7 @@ def main():
     center=[400,270]
     Twist_Pub = rospy.Publisher('/twist', Wrench, queue_size=2)
     rospy.init_node('image_process', anonymous=True)
-    rate = rospy.Rate(5) # 5hz
+    rate = rospy.Rate(125) # 100hz
 
     flag=0
     model = NNload('/home/rl/catkin_ws/src/image_process/model/fcn.h5')
@@ -121,7 +121,7 @@ def main():
         img = cv2.flip(img,1,dst=None) #vertical mirror
         pred = cv2.flip(pred,1,dst=None) #vertical mirror
         x,y,img,pred,radius = NNpostprocess(img,pred)
-
+        center=[400,270]
 
 #         if radius>10 and flag==0 and 280<x<340 and 180<y<280:
 #             center=[x,y]
@@ -129,16 +129,16 @@ def main():
 
         if radius>10  and y-center[1]>20:
             cv2.putText(img, "go", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            print("------")
-            print(center)
-            print(y)
-            print((y-center[1]))
+            # print("------")
+            # print(center)
+            # print(y)
+            # print((y-center[1]))
         elif radius>10 and center[1]-y>20:
             cv2.putText(img, "down", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            print("------")
-            print(center)
-            print(y)
-            print((center[1]-y))
+            # print("------")
+            # print(center)
+            # print(y)
+            # print((center[1]-y))
         if radius>10 and x-center[0]>20:
             cv2.putText(img, "left", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             print("------")
@@ -146,7 +146,7 @@ def main():
             print(x)
             print((x-center[0]))
             wrench = Wrench()
-            wrench.force.x = (x-center[0])
+            wrench.force.x = (x-center[0])/150
             wrench.force.y = 0
             wrench.force.z = 0
             wrench.torque.x = 0
@@ -161,7 +161,7 @@ def main():
             print(x)
             print((center[0]-x))
             wrench = Wrench()
-            wrench.force.x = (center[0]-x)
+            wrench.force.x = (x-center[0])/150
             wrench.force.y = 0
             wrench.force.z = 0
             wrench.torque.x = 0
@@ -172,14 +172,14 @@ def main():
 
         if radius>10 and radius-r>10:
             cv2.putText(img, "bottom", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            print("------")
-            print(radius)
-            print(r)
+            # print("------")
+            # print(radius)
+            # print(r)
         elif radius>10 and r-radius>10:
             cv2.putText(img, "up", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            print("------")
-            print(radius)
-            print(r)
+            # print("------")
+            # print(radius)
+            # print(r)
 
         # print(center,x,y)
 #         print(x,y)
