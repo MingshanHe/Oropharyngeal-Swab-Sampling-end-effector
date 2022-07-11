@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
@@ -47,7 +47,7 @@ import os
 
 
 # Load Model
-def NNload(path,GPU=False):
+def NNload(path,GPU=True):
     if not GPU:
         os.environ["CUDA_VISIBLE_DEVICES"]="-1"
     else:
@@ -71,7 +71,7 @@ def NNpostprocess(img,pred,visualize=True):
     pred = np.uint8(pred)
     center=[0,0]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
-    pred = cv2.morphologyEx(pred, cv2.MORPH_CLOSE, kernel,iterations=3)    #闭运算
+    pred = cv2.morphologyEx(pred, cv2.MORPH_CLOSE, kernel,iterations=3)    #closed calculation
     contours,h= cv2.findContours(pred,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) == 0  :
         return 10000,10000, img,pred,radius
@@ -105,11 +105,11 @@ def main():
     rate = rospy.Rate(5) # 5hz
 
     flag=0
-    model = NNload('/home/robot/covid19_ws/src/image_process/model/fcn.h5')
+    model = NNload('/home/rl/catkin_ws/src/image_process/model/fcn.h5')
     from pathlib import Path
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-    cap.set(4,960) #设置分辨率
+    cap.set(4,960) #setting pixels
     cap.set(3,1280)
     r=0
 
@@ -118,8 +118,8 @@ def main():
         ret,img = cap.read()
         img = cv2.resize(img,(640,480))
         pred = NNpredict(model,img)
-        img = cv2.flip(img,1,dst=None) #水平镜像
-        pred = cv2.flip(pred,1,dst=None) #水平镜像
+        img = cv2.flip(img,1,dst=None) #vertical mirror
+        pred = cv2.flip(pred,1,dst=None) #vertical mirror
         x,y,img,pred,radius = NNpostprocess(img,pred)
 
 
@@ -183,11 +183,11 @@ def main():
 
         # print(center,x,y)
 #         print(x,y)
-        #计算识别到的物体的中心距离触觉机械爪中心的距离，并进行移动
+        # identify the object's center distantce from the end effector of robotic arm and move
         cv2.imshow('pre', pred)
         cv2.imshow('img', img)
         k = cv2.waitKey(1)
-        # q键退出
+        # q key to quit()
         if k & 0xff == ord('q'):
             break
         elif  k & 0xff == ord('s'):
@@ -218,5 +218,4 @@ if __name__ == '__main__':
 # if __name__ == "__main__":
 
 #     cap.release()
-#     # 关闭窗口
 #     cv2.destroyAllWindows()
