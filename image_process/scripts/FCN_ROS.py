@@ -36,6 +36,8 @@
 ## Simple talker demo that published std_msgs/Strings messages
 ## to the 'chatter' topic
 
+from math import fabs
+from operator import truediv
 import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
@@ -44,7 +46,6 @@ import tensorflow as tf
 import cv2
 import numpy as np
 import os
-
 
 # Load Model
 def NNload(path,GPU=True):
@@ -99,7 +100,7 @@ def NNpostprocess(img,pred,visualize=True):
 
 
 def main():
-    center=[400,270]
+    global center, radius
     Twist_Pub = rospy.Publisher('/twist', Wrench, queue_size=2)
     rospy.init_node('image_process', anonymous=True)
     rate = rospy.Rate(125) # 100hz
@@ -113,77 +114,80 @@ def main():
     cap.set(3,1280)
     r=0
 
+    falg = True
+    while not rospy.is_shutdown() and falg:
+        ret,img = cap.read()
+        img = cv2.resize(img,(640,480))
+        pred = NNpredict(model,img)
+        img = cv2.flip(img,1,dst=None) #vertical mirror
+        pred = cv2.flip(pred,1,dst=None) #vertical mirror
+        x_,y_,img,pred,radius_ = NNpostprocess(img,pred)
+        # center=[400,270]
+        print('center is: (', x_,',',y_,') and radius is: (',radius_,')')
+        if input('Input "Enter" to choose this center') == '':
+            falg = False
+            center=[x_,y_]
+            radius = radius_
+    fourcc1 = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc2 = cv2.VideoWriter_fourcc(*'XVID')
+    out1 = cv2.VideoWriter('output1.avi',fourcc1, 30.0, (640,480))
+    out2 = cv2.VideoWriter('output2.avi',fourcc2, 30.0, (640,480))
+
     while not rospy.is_shutdown():
 
         ret,img = cap.read()
         img = cv2.resize(img,(640,480))
         pred = NNpredict(model,img)
         img = cv2.flip(img,1,dst=None) #vertical mirror
+        out1.write(img)
         pred = cv2.flip(pred,1,dst=None) #vertical mirror
-        x,y,img,pred,radius = NNpostprocess(img,pred)
-        center=[400,270]
+        x,y,img,pred,radius_ = NNpostprocess(img,pred)
+        out2.write(img)
+        # center=[400,270]
 
-#         if radius>10 and flag==0 and 280<x<340 and 180<y<280:
-#             center=[x,y]
-#             flag=1
 
         if radius>10  and y-center[1]>20:
             cv2.putText(img, "go", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            # print("------")
-            # print(center)
-            # print(y)
-            # print((y-center[1]))
+
         elif radius>10 and center[1]-y>20:
             cv2.putText(img, "down", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            # print("------")
-            # print(center)
-            # print(y)
-            # print((center[1]-y))
+
         if radius>10 and x-center[0]>20:
             cv2.putText(img, "left", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            print("------")
-            print(center)
-            print(x)
-            print((x-center[0]))
-            wrench = Wrench()
-            wrench.force.x = (x-center[0])/150
-            wrench.force.y = 0
-            wrench.force.z = 0
-            wrench.torque.x = 0
-            wrench.torque.y = 0
-            wrench.torque.z = 0
-            Twist_Pub.publish(wrench)
-            rate.sleep()
+
         elif radius>10 and center[0]-x>20:
             cv2.putText(img, "right", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            print("------")
-            print(center)
-            print(x)
-            print((center[0]-x))
-            wrench = Wrench()
-            wrench.force.x = (x-center[0])/150
-            wrench.force.y = 0
-            wrench.force.z = 0
-            wrench.torque.x = 0
-            wrench.torque.y = 0
-            wrench.torque.z = 0
-            Twist_Pub.publish(wrench)
-            rate.sleep()
 
         if radius>10 and radius-r>10:
             cv2.putText(img, "bottom", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            # print("------")
-            # print(radius)
-            # print(r)
+
         elif radius>10 and r-radius>10:
             cv2.putText(img, "up", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            # print("------")
-            # print(radius)
-            # print(r)
 
-        # print(center,x,y)
-#         print(x,y)
-        # identify the object's center distantce from the end effector of robotic arm and move
+        if (fabs(center[0]-x)<40) and (fabs(center[1]-y)<40):
+
+            wrench = Wrench()
+            wrench.force.x = (center[0]-x)/120
+            wrench.force.y = (center[1]-y)/120
+            wrench.force.z = (radius-radius_)/10
+            wrench.torque.x = 0
+            wrench.torque.y = 0
+            wrench.torque.z = 0
+            Twist_Pub.publish(wrench)
+            rate.sleep()
+        else:
+            wrench = Wrench()
+            wrench.force.x = (center[0]-x)/120
+            wrench.force.y = (y-center[1])/120
+            wrench.force.z = 0
+            wrench.torque.x = 0
+            wrench.torque.y = 0
+            wrench.torque.z = 0
+            Twist_Pub.publish(wrench)
+            rate.sleep()
+
+
+
         cv2.imshow('pre', pred)
         cv2.imshow('img', img)
         k = cv2.waitKey(1)
