@@ -140,23 +140,23 @@ def CreatePoints(center,r_1,r_2,select,step=0.01,separate=0.1):
                 point.append([center[0]+r_2*np.cos(i),center[1]+r_2*np.sin(i)])
     return point
 def DetectInRegion(center,r_1,r_2,point,separate=0.1):
-    yellow = (0,0,255)
-    white = (0,0,0)
-    activate = [yellow, yellow, yellow, yellow]
+    red = (0,0,255)
+    black = (0,0,0)
+    activate = [black, black, black, black]
     if math.sqrt((point[0]-center[0])**2+(point[1]-center[1])**2)>r_1 and\
         math.sqrt((point[0]-center[0])**2+(point[1]-center[1])**2)<r_2:
         rad = math.atan2((point[0]-center[0]),(point[1]-center[1]))
         if (rad>-np.pi/4+separate and rad < pi/4-separate):
-            activate[0] = white
+            activate[1] = red
             return activate
         elif (rad>np.pi/4+separate and rad < 3*pi/4-separate):
-            activate[1] = white
+            activate[0] = red
             return activate
-        elif (rad>3*np.pi/4+separate and rad < -3*pi/4-separate):
-            activate[2] = white
+        elif (rad>3*np.pi/4+separate or rad < -3*pi/4-separate):
+            activate[3] = red
             return activate
         elif (rad>-3*np.pi/4+separate and rad < -pi/4-separate):
-            activate[3] = white
+            activate[2] = red
             return activate
     return activate
 
