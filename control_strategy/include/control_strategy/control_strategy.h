@@ -8,6 +8,7 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/WrenchStamped.h"
+#include "geometry_msgs/Wrench.h"
 #include "cartesian_state_msgs/PoseTwist.h"
 #include "control_msgs/GripperCommandActionGoal.h"
 #include "control_msgs/GripperCommand.h"
@@ -29,8 +30,8 @@
 #define CartesianPose_Topic         "/cartesian_position_controller/command_cart_pos"
 #define CartesianTwist_Topic        "/cartesian_velocity_controller/command_cart_vel"
 #define CartesianState_Topic        "/cartesian_velocity_controller/ee_state"
-#define Wrench_Topic                "/wrench"
-#define Predict_IMG_Topic           "/predict_img"
+#define ImageWrench_Topic           "/twist"
+#define FakeWrench_Topic            "/fake_wrench"
 
 using namespace Eigen;
 
@@ -46,24 +47,24 @@ public:
     Control_Strategy(const ros::NodeHandle &nh_,
                         std::vector<double> workspace_limits_,
                         std::vector<double> home_pose_,
-                        std::vector<double> work_start_pose_,
-                        std::vector<double> grasp_pose_,
-                        std::vector<double> predict_map_size_);
+                        std::vector<double> work_start_pose_);
     ~Control_Strategy(){};
 public:
     void Switch_Controller(const int &cognition);
+    void Switch_Wrench(const int &cognition);
     void Go_Home(void);
     void Go_Work(void);
     void Go(Eigen::Vector3d Position);
-    void Grasp(void);
 public:
     void Cartesian_State_Cb(const cartesian_state_msgs::PoseTwistConstPtr &msg);
+    void ImageWrench_Cb(const geometry_msgs::Wrench &msg);
 private:
     ros::NodeHandle                                         nh;
     ros::Publisher                                          Cartesian_Pose_Pub;
     ros::Publisher                                          Cartesian_Twist_Pub;
     ros::Publisher                                          Predict_IMG_Pub;
     ros::Publisher                                          Gripper_Pub;
+    ros::Publisher                                          Wrench_Pub;
     ros::Subscriber                                         Cartesian_State_Sub;
     ros::Subscriber                                         Wrench_Sub;
     ros::ServiceClient                                      switch_controller_client;
@@ -73,14 +74,9 @@ private:
 
 private:
     double                                                  force_x;
-    double                                                  force_x_pre;
     double                                                  force_y;
-    double                                                  force_y_pre;
     double                                                  force_z;
-    double                                                  force_z_pre;
 
-    cv::Mat                                                 Predict_IMG;
-    std_msgs::Float64MultiArray                             Predict_IMG_msg;
 
     Vector6d                                                workspace_limits;
     Vector7d                                                home_pose;

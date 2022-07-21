@@ -4,37 +4,19 @@ Control_Strategy::Control_Strategy(
     const ros::NodeHandle &nh_,
     std::vector<double>     workspace_limits_,
     std::vector<double>     home_pose_,
-    std::vector<double>     work_start_pose_,
-    std::vector<double>     grasp_pose_,
-    std::vector<double>     predict_map_size_) :
+    std::vector<double>     work_start_pose_) :
     nh(nh_), workspace_limits(workspace_limits_.data()),
-    home_pose(home_pose_.data()),work_start_pose(work_start_pose_.data()),grasp_pose(grasp_pose_.data()),
-    predict_map_size(predict_map_size_.data())
+    home_pose(home_pose_.data()),work_start_pose(work_start_pose_.data())
 {
-    force_x = 0.0;
-    force_y = 0.0;
-    force_x_pre = 0.0;
-    force_y_pre = 0.0;
     // ROS Service
     switch_controller_client = nh.serviceClient<controller_manager_msgs::SwitchController>(SwitchController_Topic);
     // ROS Pub&Sub
     Cartesian_Pose_Pub  = nh.advertise<geometry_msgs::Pose>(CartesianPose_Topic, 1, true);
     Cartesian_Twist_Pub = nh.advertise<geometry_msgs::Twist>(CartesianTwist_Topic, 1, true);
-    Predict_IMG_Pub     = nh.advertise<std_msgs::Float64MultiArray>(Predict_IMG_Topic, 1, true);
     Gripper_Pub         = nh.advertise<control_msgs::GripperCommandActionGoal>("/gripper_controller/gripper_cmd/goal", 1, true);
+    Wrench_Pub          = nh.advertise<geometry_msgs::Wrench>(FakeWrench_Topic, 1, true);
     Cartesian_State_Sub = nh.subscribe(CartesianState_Topic, 5, &Control_Strategy::Cartesian_State_Cb, this, ros::TransportHints().reliable().tcpNoDelay());
-
-    Predict_IMG = cv::Mat(predict_map_size(0),predict_map_size(1),CV_8UC1);
-    uchar* data = (uchar*)Predict_IMG.data;
-    for ( int i=0; i<predict_map_size(0); i++ )
-    {
-        for ( int j=0; j<predict_map_size(1); j++ )
-        {
-            int index = i*predict_map_size(0) + j;
-            data[index] = 0;
-        }
-    }
-    data[50] = 0;
+    Wrench_Sub = nh.subscribe(ImageWrench_Topic, 5, &Control_Strategy::ImageWrench_Cb, this, ros::TransportHints().reliable().tcpNoDelay());
 }
 
 void Control_Strategy::Switch_Controller(const int &cognition)
@@ -118,6 +100,74 @@ void Control_Strategy::Switch_Controller(const int &cognition)
         break;
     }
 }
+
+void Control_Strategy::Switch_Wrench(const int &cognition)
+{
+    ros::Rate loop_rate(10);
+    geometry_msgs::Wrench msg;
+    switch (cognition)
+    {
+        case 0:
+            msg.force.x = (1 + force_x);
+            msg.force.y = 0;
+            msg.force.z = 0;
+            msg.torque.x = 0;
+            msg.torque.y = 0;
+            msg.torque.z = 0;
+            while ((1+ force_x)>0)
+            {
+                Wrench_Pub.publish(msg);
+                ros::spinOnce();
+                loop_rate.sleep();
+            }
+            break;
+        case 1:
+            msg.force.x = 0;
+            msg.force.y = (1 + force_y);
+            msg.force.z = 0;
+            msg.torque.x = 0;
+            msg.torque.y = 0;
+            msg.torque.z = 0;
+            while ((1 + force_y)>0)
+            {
+                Wrench_Pub.publish(msg);
+                ros::spinOnce();
+                loop_rate.sleep();
+            }
+            break;
+        case 2:
+            msg.force.x = (1 - force_x);
+            msg.force.y = 0;
+            msg.force.z = 0;
+            msg.torque.x = 0;
+            msg.torque.y = 0;
+            msg.torque.z = 0;
+            while ((1 - force_x)>0)
+            {
+                Wrench_Pub.publish(msg);
+                ros::spinOnce();
+                loop_rate.sleep();
+            }
+            break;
+        case 3:
+            msg.force.x = (1 - force_x);
+            msg.force.y = 0;
+            msg.force.z = 0;
+            msg.torque.x = 0;
+            msg.torque.y = 0;
+            msg.torque.z = 0;
+            while ((1 - force_x)>0)
+            {
+                Wrench_Pub.publish(msg);
+                ros::spinOnce();
+                loop_rate.sleep();
+            }
+            break;
+        default:
+            std::cout<<"Need to Add."<<std::endl;
+            break;
+    }
+}
 void Control_Strategy::Go_Home(void)
 {
     ros::Rate loop_rate(10);
@@ -129,7 +179,7 @@ void Control_Strategy::Go_Home(void)
     msg.orientation.y = home_pose(4);
     msg.orientation.z = home_pose(5);
     msg.orientation.w = home_pose(6);
-    size_t i = 3;
+    size_t i = 10;
     while (i>0)
     {
         Cartesian_Pose_Pub.publish(msg);
@@ -150,7 +200,7 @@ void Control_Strategy::Go_Work(void)
     msg.orientation.y = work_start_pose(4);
     msg.orientation.z = work_start_pose(5);
     msg.orientation.w = work_start_pose(6);
-    size_t i = 3;
+    size_t i = 10;
     while (i>0)
     {
         Cartesian_Pose_Pub.publish(msg);
@@ -180,58 +230,17 @@ void Control_Strategy::Go(Eigen::Vector3d Position)
         i--;
     }
 }
-void Control_Strategy::Grasp(void)
-{
-    ros::Rate loop_rate(10);
-    geometry_msgs::Pose msg;
-    msg.position.x = grasp_pose(0);
-    msg.position.y = grasp_pose(1);
-    msg.position.z = grasp_pose(2);
-    msg.orientation.x = grasp_pose(3);
-    msg.orientation.y = grasp_pose(4);
-    msg.orientation.z = grasp_pose(5);
-    msg.orientation.w = grasp_pose(6);
-    size_t i = 3;
-    while (i>0)
-    {
-        Cartesian_Pose_Pub.publish(msg);
-        ros::spinOnce();
-        loop_rate.sleep();
-        i--;
-    }
-    sleep(2);
-    control_msgs::GripperCommandActionGoal gripper_msg;
-    gripper_msg.goal.command.position = 0.365;
-    gripper_msg.goal.command.max_effort = -5.0;
-    i = 3;
-    while (i>0)
-    {
-        Gripper_Pub.publish(gripper_msg);
-        ros::spinOnce();
-        loop_rate.sleep();
-        i--;
-    }
-    sleep(2);
 
-    msg.position.x = grasp_pose(0);
-    msg.position.y = grasp_pose(1);
-    msg.position.z = grasp_pose(2)+0.1;
-    msg.orientation.x = grasp_pose(3);
-    msg.orientation.y = grasp_pose(4);
-    msg.orientation.z = grasp_pose(5);
-    msg.orientation.w = grasp_pose(6);
-    i = 3;
-    while (i>0)
-    {
-        Cartesian_Pose_Pub.publish(msg);
-        ros::spinOnce();
-        loop_rate.sleep();
-        i--;
-    }
 
-}
 void Control_Strategy::Cartesian_State_Cb(const cartesian_state_msgs::PoseTwistConstPtr &msg)
 {
     Cartesian_State <<  msg->pose.position.x, msg->pose.position.y, msg->pose.position.z,
                         msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w;
+}
+
+void Control_Strategy::ImageWrench_Cb(const geometry_msgs::Wrench &msg)
+{
+    force_x = msg.force.x;
+    force_y = msg.force.y;
+    force_z = msg.force.z;
 }
