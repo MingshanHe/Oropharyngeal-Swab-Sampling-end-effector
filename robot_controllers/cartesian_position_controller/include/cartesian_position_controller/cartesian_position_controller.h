@@ -21,6 +21,7 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <realtime_tools/realtime_publisher.h>
 #include "kinematics_base.h"
+#include "math.h"
 
 namespace cartesian_position_controller
 {
@@ -77,12 +78,14 @@ protected:
 
   ros::Time                       last_publish_time_;
   double                          publish_rate_;
+  double                          max_velocity_;
+  double                          step_velocity_;
+  std::vector<double>             step_position_;
   double                          pre_e;
 
   KDL::Rotation                   End_Pos_Rotation;
   KDL::Vector                     End_Pos_Vector;
   KDL::JntArray                   Jnt_Vel_Cmd_;      // Desired joint velocity
-  KDL::Twist                      End_Vel_Cmd_;      // Desired end-effector velocity
   KDL::JntArray                   Jnt_Pos_Cmd_;      // Desired joint position
   KDL::Frame                      End_Pos_Cmd_;      // Desired end-effector position
   KDL::FrameVel                   End_Vel_;

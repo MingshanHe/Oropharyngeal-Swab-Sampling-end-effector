@@ -26,11 +26,27 @@ bool Cartesian_Position_Controller::init(
   fk_vel_solver_.reset(new KDL::ChainFkSolverVel_recursive(this->kdl_chain_));
   fk_pos_solver_.reset(new KDL::ChainFkSolverPos_recursive(this->kdl_chain_));
 
-  // get publishing period
+  // get param
   if (!n.getParam("publish_rate", publish_rate_)){
       ROS_ERROR("Parameter 'publish_rate' not set");
       return false;
   }
+
+  if (!n.getParam("max_velocity", max_velocity_)){
+      ROS_ERROR("Parameter 'max_velocity' not set");
+      return false;
+  }
+
+  if (!n.getParam("step_position", step_position_)){
+      ROS_ERROR("Parameter 'step_position' not set");
+      return false;
+  }
+
+  if (!n.getParam("step_velocity", step_velocity_)){
+      ROS_ERROR("Parameter 'step_velocity' not set");
+      return false;
+  }
+
   realtime_pub_.reset(new realtime_tools::RealtimePublisher
     <cartesian_state_msgs::PoseTwist>(n, "ee_state", 4));
 
@@ -46,7 +62,6 @@ bool Cartesian_Position_Controller::init(
   Jnt_Vel_Cmd_.resize(this->kdl_chain_.getNrOfJoints());
   Jnt_Pos_Cmd_.resize(this->kdl_chain_.getNrOfJoints());
 
-  End_Vel_Cmd_ = KDL::Twist::Zero();
   End_Pos_.p.Zero();
   End_Pos_.M.Identity();
   End_Vel_.p.Zero();
@@ -69,7 +84,6 @@ void Cartesian_Position_Controller::starting(const ros::Time& time){
     this->joint_effort_(i)    = 0.0;
     this->joint_state_.q(i)         = this->joint_handles_[i].getPosition();
   }
-  End_Vel_Cmd_ = KDL::Twist::Zero();
   fk_pos_solver_->JntToCart(this->joint_state_.q, End_Pos_Cmd_);
   last_publish_time_ = time;
 }
@@ -81,22 +95,68 @@ void Cartesian_Position_Controller::update(const ros::Time& time, const ros::Dur
   // Get joint positions
   for(std::size_t i=0; i < this->joint_handles_.size(); i++)
   {
-    // if(fabs(this->joint_handles_[i].getPosition()-(this->joint_state_.q(i) + Jnt_Vel_Cmd_(i)*period.toSec()))<0.0000001 || Jnt_Vel_Cmd_(i)!=0)
-    // {
-      this->joint_state_.q(i)         = this->joint_handles_[i].getPosition();
-      this->joint_state_.qdot(i)      = this->joint_handles_[i].getVelocity();
-      this->joint_effort_(i)        = this->joint_handles_[i].getEffort();
-    // }
+    this->joint_state_.q(i)         = this->joint_handles_[i].getPosition();
+    this->joint_state_.qdot(i)      = this->joint_handles_[i].getVelocity();
+    this->joint_effort_(i)        = this->joint_handles_[i].getEffort();
   }
-  // Compute inverse kinematics velocity solver
-  ik_vel_solver_->CartToJnt(this->joint_state_.q, End_Vel_Cmd_, Jnt_Vel_Cmd_);
-  ik_pos_solver_->CartToJnt(this->joint_state_.q, End_Pos_Cmd_, Jnt_Pos_Cmd_);
-  writePositionCommands(period);
 
   // Forward kinematics
   fk_vel_solver_->JntToCart(this->joint_state_, End_Vel_);
   fk_pos_solver_->JntToCart(this->joint_state_.q, End_Pos_);
 
+  // ik_vel_solver_->CartToJnt(this->joint_state_.q, End_Vel_Cmd_, Jnt_Vel_Cmd_);
+  // double  max_time = 0;
+  // for(std::size_t i=0; i < this->joint_handles_.size(); i++)
+  // {
+  //   double time = fabs(this->joint_state_.q(i) - Jnt_Pos_Cmd_(i))/step_position_[i];
+  //   if (time > max_time)
+  //   {
+  //     max_time = time;
+  //   }
+  // }
+  // End_Pos_Vector[0] = End_Pos_.p[0] + (End_Pos_Cmd_.p[0] - End_Pos_.p[0])/max_time;
+  // End_Pos_Vector[1] = End_Pos_.p[1] + (End_Pos_Cmd_.p[1] - End_Pos_.p[1])/max_time;
+  // End_Pos_Vector[2] = End_Pos_.p[2] + (End_Pos_Cmd_.p[2] - End_Pos_.p[2])/max_time;
+  // double starting[4];
+  // double ending[4];
+  // End_Pos_.M.GetQuaternion(starting[0],starting[1],starting[2],starting[3]);
+  // End_Pos_Cmd_.M.GetQuaternion(ending[0],ending[1],ending[2],ending[3]);
+  // float cosa = starting[0]*ending[0] + starting[1]*ending[1] + starting[2]*ending[2] + starting[3]*ending[3];
+  // if ( cosa < 0.0f ) 
+  // {
+  //     ending[0] = -ending[0];
+  //     ending[1] = -ending[1];
+  //     ending[2] = -ending[2];
+  //     ending[3] = -ending[3];
+  //     cosa = -cosa;
+  // }
+  
+  // float k0, k1;
+  // if ( cosa > 0.9995f ) 
+  // {
+  //     k0 = 1.0f - (1/max_time);
+  //     k1 = (1/max_time);
+  // }
+  // else 
+  // {
+  //     float sina = sqrt( 1.0f - cosa*cosa );
+  //     float a = atan2( sina, cosa );
+  //     k0 = sin((1.0f - (1/max_time))*a)  / sina;
+  //     k1 = sin( (1/max_time)*a) / sina;
+  // }
+  // double x, y, z, w;
+  // x = starting[0]*k0 + ending[0]*k1;
+  // y = starting[1]*k0 + ending[1]*k1;
+  // z = starting[2]*k0 + ending[2]*k1;
+  // w = starting[3]*k0 + ending[3]*k1;
+
+  // End_Pos_Cmd_.p = End_Pos_Vector;
+  // End_Pos_Cmd_.M = End_Pos_Rotation.Quaternion(x,y,z,w);
+
+  ik_pos_solver_->CartToJnt(this->joint_state_.q, End_Pos_Cmd_, Jnt_Pos_Cmd_);
+  // std::cout<<"Jnt_Pos_Cmd_: "<<Jnt_Pos_Cmd_(0)<<","<<Jnt_Pos_Cmd_(1)<<","<<Jnt_Pos_Cmd_(2)<<","<<Jnt_Pos_Cmd_(3)<<","<<Jnt_Pos_Cmd_(4)<<","<<Jnt_Pos_Cmd_(5)<<std::endl;
+  writePositionCommands(period);
+  
   // Limit rate of publishing
   if (publish_rate_ > 0.0 && last_publish_time_
        + ros::Duration(1.0/publish_rate_) < time) {
@@ -144,37 +204,29 @@ void Cartesian_Position_Controller::command_cart_pos(const geometry_msgs::PoseCo
  * for a VelocityJointInterface
  * \param period The duration of an update cycle
  */
-void Cartesian_Position_Controller::writeVelocityCommands(
-                                    const ros::Duration& period) {
-    for(std::size_t i=0; i < this->joint_handles_.size(); i++) {
-      this->joint_handles_[i].setCommand(Jnt_Vel_Cmd_(i));
-    }
-}
 
 void Cartesian_Position_Controller::writePositionCommands(
                                     const ros::Duration& period)  {
     for(std::size_t i = 0; i < this->joint_handles_.size(); i++){
-      double pos_delta;
-      double Kp = 0.05;
-      double Kd = 0.00;
-      // if(fabs(Kp*(Jnt_Pos_Cmd_(i)-this->joint_state_.q(i))) > 0.005)
-      // {
-      //   if(Kp*(Jnt_Pos_Cmd_(i)-this->joint_state_.q(i)) > 0)
-      //     {
-      //       this->joint_handles_[i].setCommand(this->joint_state_.q(i) + 0.005);
-      //     }
-      //   else
-      //     {
-      //       this->joint_handles_[i].setCommand(this->joint_state_.q(i) - 0.005);
-      //       }
-      // }
-      // else{
-      //   this->joint_handles_[i].setCommand(this->joint_state_.q(i) + Kp*(Jnt_Pos_Cmd_(i)-this->joint_state_.q(i)));
-      // }
-
       // Method1:
-      this->joint_handles_[i].setCommand(this->joint_state_.q(i) + Kp*(Jnt_Pos_Cmd_(i)-this->joint_state_.q(i)));
-
+      // double pos_delta;
+      // double Kp = 0.05;
+      // double Kd = 0.00;
+      if((Jnt_Pos_Cmd_(i)-this->joint_state_.q(i)) > step_position_[i])
+      {
+        this->joint_handles_[i].setCommand(this->joint_state_.q(i) +step_position_[i]);
+      }
+      else if(-(Jnt_Pos_Cmd_(i)-this->joint_state_.q(i)) > step_position_[i])
+      {
+        this->joint_handles_[i].setCommand(this->joint_state_.q(i) - step_position_[i]);
+      }
+      else
+      {
+        this->joint_handles_[i].setCommand(this->joint_state_.q(i) + (Jnt_Pos_Cmd_(i)-this->joint_state_.q(i)));
+      }
+      // Method2:
+      // this->joint_handles_[i].setCommand(this->joint_state_.q(i)
+      //                                 + Jnt_Vel_Cmd_(i)*period.toSec());
     }
 }
 
