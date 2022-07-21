@@ -8,7 +8,7 @@
   <arg name="trajectory_port" default="50003" doc="Port that will be opened by the driver to allow trajectory forwarding."/>
   <arg name="tf_prefix" default="" doc="tf_prefix used for the robot."/>
   <!-- <arg name="controllers" default="joint_state_controller scaled_pos_joint_traj_controller speed_scaling_state_controller force_torque_sensor_controller" doc="Controllers that are activated by default."/> -->
-  <arg name="controllers" default="cartesian_velocity_controller joint_state_controller  force_torque_sensor_controller" doc="Controllers that are activated by default."/>
+  <arg name="controllers" default="cartesian_velocity_controller cartesian_position_controller joint_state_controller  force_torque_sensor_controller" doc="Controllers that are activated by default."/>
 
   <arg name="controller_config_file" default="$(find ur_robot_driver)/config/ur5_controllers.yaml" doc="Config file used for defining the ROS-Control controllers."/>
   <arg name="robot_description_file" default="$(find ur_description)/launch/load_ur5.launch" doc="Robot description launch file."/>
@@ -16,7 +16,7 @@
   <arg name="headless_mode" default="false" doc="Automatically send URScript to robot to execute. On e-Series this does require the robot to be in 'remote-control' mode. With this, the URCap is not needed on the robot."/>
   <arg name="ur_hardware_interface_node_required" default="true" doc="Shut down ros environment if ur_hardware_interface-node dies."/>
 
-  <include file="$(find ur_robot_driver)/launch/ur_common.launch" pass_all_args="true">
+  <include file="$(find ur_robot_driver)/launch/ur5_common.launch" pass_all_args="true">
     <arg name="use_tool_communication" value="false"/>
   </include>
 </launch>
