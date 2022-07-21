@@ -103,7 +103,7 @@ def main():
     global center, radius
     Twist_Pub = rospy.Publisher('/twist', Wrench, queue_size=2)
     rospy.init_node('image_process', anonymous=True)
-    rate = rospy.Rate(125) # 100hz
+    rate = rospy.Rate(10) # 100hz
 
     flag=0
     model = NNload('/home/rl/catkin_ws/src/image_process/model/fcn.h5')
