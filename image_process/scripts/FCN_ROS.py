@@ -46,6 +46,9 @@ import tensorflow as tf
 import cv2
 import numpy as np
 import os
+from cmath import pi, sqrt
+import math
+from math import fabs
 
 # Load Model
 def NNload(path,GPU=True):
@@ -98,12 +101,73 @@ def NNpostprocess(img,pred,visualize=True):
     cv2.circle(img,center,3,[0,0,255],3) 
     return x,y,img,pred,radius
 
+def CreatePoints(center,r_1,r_2,select,step=0.01,separate=0.1):
+    point = []
+    if select == '1':
+        ind = np.arange(-np.pi/4,7*np.pi/4,step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>-np.pi/4+separate and i < pi/4-separate):
+                point.append([center[0]+r_1*np.cos(i),center[1]+r_1*np.sin(i)])
+        ind = np.arange(7*np.pi/4,-np.pi/4,-step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>-np.pi/4+separate and i < pi/4-separate):     
+                point.append([center[0]+r_2*np.cos(i),center[1]+r_2*np.sin(i)])
+    elif select == '2':
+        ind = np.arange(-np.pi/4,7*np.pi/4,step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>pi/4+separate and i < 3*pi/4-separate):
+                point.append([center[0]+r_1*np.cos(i),center[1]+r_1*np.sin(i)])
+        ind = np.arange(7*np.pi/4,-np.pi/4,-step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>pi/4+separate and i < 3*pi/4-separate):     
+                point.append([center[0]+r_2*np.cos(i),center[1]+r_2*np.sin(i)])
+    elif select == '3':
+        ind = np.arange(-np.pi/4,7*np.pi/4,step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>3*pi/4+separate and i < 5*pi/4-separate):
+                point.append([center[0]+r_1*np.cos(i),center[1]+r_1*np.sin(i)])
+        ind = np.arange(7*np.pi/4,-np.pi/4,-step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>3*pi/4+separate and i < 5*pi/4-separate):     
+                point.append([center[0]+r_2*np.cos(i),center[1]+r_2*np.sin(i)])
+    elif select == '4':
+        ind = np.arange(-np.pi/4,7*np.pi/4,step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>5*pi/4+separate and i < 7*pi/4-separate):
+                point.append([center[0]+r_1*np.cos(i),center[1]+r_1*np.sin(i)])
+        ind = np.arange(7*np.pi/4,-np.pi/4,-step) # 步长越小图线越平滑
+        for i in ind:
+            if  (i>5*pi/4+separate and i < 7*pi/4-separate):     
+                point.append([center[0]+r_2*np.cos(i),center[1]+r_2*np.sin(i)])
+    return point
+
+def DetectInRegion(center,r_1,r_2,point,separate=0.1):
+    red = (0,0,255)
+    black = (0,0,0)
+    activate = [black, black, black, black]
+    if math.sqrt((point[0]-center[0])**2+(point[1]-center[1])**2)>r_1 and\
+        math.sqrt((point[0]-center[0])**2+(point[1]-center[1])**2)<r_2:
+        rad = math.atan2((point[0]-center[0]),(point[1]-center[1]))
+        if (rad>-np.pi/4+separate and rad < pi/4-separate):
+            activate[1] = red
+            return activate
+        elif (rad>np.pi/4+separate and rad < 3*pi/4-separate):
+            activate[0] = red
+            return activate
+        elif (rad>3*np.pi/4+separate or rad < -3*pi/4-separate):
+            activate[3] = red
+            return activate
+        elif (rad>-3*np.pi/4+separate and rad < -pi/4-separate):
+            activate[2] = red
+            return activate
+    return activate
+
 
 def main():
     global center, radius
     Twist_Pub = rospy.Publisher('/twist', Wrench, queue_size=2)
     rospy.init_node('image_process', anonymous=True)
-    rate = rospy.Rate(10) # 100hz
+    rate = rospy.Rate(30) # 100hz
 
     flag=0
     model = NNload('/home/rl/catkin_ws/src/image_process/model/fcn.h5')
@@ -145,24 +209,27 @@ def main():
         out2.write(img)
         # center=[400,270]
 
+        # center = [345,205]
+        _radius_ = [120,200]
 
-        if radius>10  and y-center[1]>20:
-            cv2.putText(img, "go", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-        elif radius>10 and center[1]-y>20:
-            cv2.putText(img, "down", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-        if radius>10 and x-center[0]>20:
-            cv2.putText(img, "left", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-        elif radius>10 and center[0]-x>20:
-            cv2.putText(img, "right", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-        if radius>10 and radius-r>10:
-            cv2.putText(img, "bottom", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-        elif radius>10 and r-radius>10:
-            cv2.putText(img, "up", (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        activate_ = DetectInRegion(center,_radius_[0],_radius_[1],(x,y))
+        # print(activate_)
+        point = CreatePoints(center, _radius_[0],_radius_[1],select='1')
+        points = np.array(point,np.int32)
+        points = points.reshape((-1,1,2))
+        cv2.polylines(img,[points],True,activate_[0])
+        point = CreatePoints(center, _radius_[0],_radius_[1],select='2')
+        points = np.array(point,np.int32)
+        points = points.reshape((-1,1,2))
+        cv2.polylines(img,[points],True,activate_[1])
+        point = CreatePoints(center, _radius_[0],_radius_[1],select='3')
+        points = np.array(point,np.int32)
+        points = points.reshape((-1,1,2))
+        cv2.polylines(img,[points],True,activate_[2])
+        point = CreatePoints(center, _radius_[0],_radius_[1],select='4')
+        points = np.array(point,np.int32)
+        points = points.reshape((-1,1,2))
+        cv2.polylines(img,[points],True,activate_[3])
 
         if (fabs(center[0]-x)<40) and (fabs(center[1]-y)<40):
 
