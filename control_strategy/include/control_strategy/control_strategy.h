@@ -54,7 +54,7 @@ public:
     void Switch_Wrench(const int &cognition);
     void Go_Home(void);
     void Go_Work(void);
-    void Go(Eigen::Vector3d Position);
+    void Go(std::vector<double> Position);
 public:
     void Cartesian_State_Cb(const cartesian_state_msgs::PoseTwistConstPtr &msg);
     void ImageWrench_Cb(const geometry_msgs::Wrench &msg);
@@ -81,8 +81,7 @@ private:
     Vector6d                                                workspace_limits;
     Vector7d                                                home_pose;
     Vector7d                                                work_start_pose;
-    Vector7d                                                grasp_pose;
-    Vector2d                                                predict_map_size;
+
 
     Vector7d                                                Cartesian_State;
 

@@ -103,18 +103,19 @@ void Control_Strategy::Switch_Controller(const int &cognition)
 
 void Control_Strategy::Switch_Wrench(const int &cognition)
 {
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(30);
     geometry_msgs::Wrench msg;
+    int ind;
     switch (cognition)
     {
         case 0:
-            msg.force.x = (1 + force_x);
+            msg.force.x = (0.75 + force_x);
             msg.force.y = 0;
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((1+ force_x)>0)
+            while ((0.75+ force_x)>0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
@@ -122,13 +123,13 @@ void Control_Strategy::Switch_Wrench(const int &cognition)
             }
             break;
         case 1:
-            msg.force.x = 0;
-            msg.force.y = (1 + force_y);
+            msg.force.x = (-0.75 + force_x);
+            msg.force.y = 0;
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((1 + force_y)>0)
+            while ((-0.75+ force_x)<0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
@@ -136,13 +137,13 @@ void Control_Strategy::Switch_Wrench(const int &cognition)
             }
             break;
         case 2:
-            msg.force.x = (1 - force_x);
-            msg.force.y = 0;
+            msg.force.x = 0;
+            msg.force.y = (1 + force_y);
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((1 - force_x)>0)
+            while ((0.75 + force_y)>0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
@@ -150,21 +151,54 @@ void Control_Strategy::Switch_Wrench(const int &cognition)
             }
             break;
         case 3:
-            msg.force.x = (1 - force_x);
-            msg.force.y = 0;
+            msg.force.x = 0;
+            msg.force.y = (-0.75 + force_y);
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((1 - force_x)>0)
+            while ((-0.75 + force_y)<0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
                 loop_rate.sleep();
             }
             break;
+        case 4:
+            msg.force.x = 0;
+            msg.force.y = 0;
+            msg.force.z = 0;
+            msg.torque.x = 0;
+            msg.torque.y = 0;
+            msg.torque.z = 0;
+            ind = 120;
+            while (ind>0)
+            {
+                Wrench_Pub.publish(msg);
+                ros::spinOnce();
+                loop_rate.sleep();
+                ind--;
+            }
+            break;
+        case 5:
+            msg.force.x = 0;
+            msg.force.y = 0;
+            msg.force.z = 0;
+            msg.torque.x = 0;
+            msg.torque.y = 0;
+            msg.torque.z = 0;
+            ind = 180;
+            while (ind>0)
+            {
+                Wrench_Pub.publish(msg);
+                ros::spinOnce();
+                loop_rate.sleep();
+                ind--;
+            }
+            break;
+
         default:
-            std::cout<<"Need to Add."<<std::endl;
+            // std::cout<<"Need to Add."<<std::endl;
             break;
     }
 }
@@ -209,18 +243,18 @@ void Control_Strategy::Go_Work(void)
         i--;
     }
 }
-void Control_Strategy::Go(Eigen::Vector3d Position)
+void Control_Strategy::Go(std::vector<double> Position)
 {
     ros::Rate loop_rate(10);
     geometry_msgs::Pose msg;
 
-    msg.position.x = Position(0);
-    msg.position.y = Position(1);
-    msg.position.z = Position(2);
-    msg.orientation.x = home_pose(3);
-    msg.orientation.y = home_pose(4);
-    msg.orientation.z = home_pose(5);
-    msg.orientation.w = home_pose(6);
+    msg.position.x = Position[0];
+    msg.position.y = Position[1];
+    msg.position.z = Position[2];
+    msg.orientation.x = Position[3];
+    msg.orientation.y = Position[4];
+    msg.orientation.z = Position[5];
+    msg.orientation.w = Position[6];
     size_t i = 3;
     while (i>0)
     {
