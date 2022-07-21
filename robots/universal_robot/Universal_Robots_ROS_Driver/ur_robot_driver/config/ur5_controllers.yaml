@@ -137,7 +137,7 @@ cartesian_position_controller:
    tip_name: wrist_3_link
    max_velocity: 0.2
    step_velocity: 0.1
-   step_position: [0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025]
+   step_position: [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
 
 
 # Pass an array of joint velocities directly to the joints
