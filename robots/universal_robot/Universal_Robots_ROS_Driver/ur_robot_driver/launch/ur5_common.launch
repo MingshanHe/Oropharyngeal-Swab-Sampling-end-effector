@@ -10,8 +10,10 @@
   <arg name="trajectory_port" default="50003" doc="Port that will be opened by the driver to allow trajectory forwarding."/>
   <arg name="kinematics_config" doc="Kinematics config file used for calibration correction. This will be used to verify the robot's calibration is matching the robot_description."/>
   <arg name="tf_prefix" default="" doc="tf_prefix used for the robot."/>
-  <arg name="controllers" default="cartesian_velocity_controller cartesian_position_controller joint_state_controller  force_torque_sensor_controller" doc="Controllers that are activated by default."/>
-  <arg name="stopped_controllers" default="cartesian_velocity_controller " doc="Controllers that are initally loaded, but not started."/>
+  <!-- <arg name="controllers" default="cartesian_velocity_controller cartesian_position_controller joint_state_controller  force_torque_sensor_controller" doc="Controllers that are activated by default."/> -->
+  <arg name="controllers" default="cartesian_velocity_controller joint_state_controller  force_torque_sensor_controller" doc="Controllers that are activated by default."/>
+
+  <arg name="stopped_controllers" default="" doc="Controllers that are initally loaded, but not started."/>
   <arg name="tool_voltage" default="0" doc="Tool voltage set at the beginning of the UR program. Only used, when `use_tool_communication` is set to true."/>
   <arg name="tool_parity" default="0" doc="Parity configuration used for tool communication. Only used, when `use_tool_communication` is set to true."/>
   <arg name="tool_baud_rate" default="115200" doc="Baud rate used for tool communication. Only used, when `use_tool_communication` is set to true."/>

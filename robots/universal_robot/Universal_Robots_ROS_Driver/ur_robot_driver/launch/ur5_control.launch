@@ -15,8 +15,10 @@
   <arg name="trajectory_port" default="50003" doc="Port that will be opened by the driver to allow trajectory forwarding."/>
   <arg name="kinematics_config" doc="Kinematics config file used for calibration correction. This will be used to verify the robot's calibration is matching the robot_description. Pass the same config file that is passed to the robot_description."/>
   <arg name="tf_prefix" default="" doc="tf_prefix used for the robot."/>
-  <arg name="controllers" default="cartesian_velocity_controller cartesian_position_controller joint_state_controller  force_torque_sensor_controller"/>
-  <arg name="stopped_controllers" default="cartesian_velocity_controller "/>
+  <!-- <arg name="controllers" default="cartesian_velocity_controller cartesian_position_controller joint_state_controller  force_torque_sensor_controller"/> -->
+  <arg name="controllers" default="cartesian_velocity_controller joint_state_controller  force_torque_sensor_controller"/>
+
+  <arg name="stopped_controllers" default=""/>
   <arg name="urscript_file" default="$(find ur_client_library)/resources/external_control.urscript" doc="Path to URScript that will be sent to the robot and that forms the main control program."/>
   <arg name="rtde_output_recipe_file" default="$(find ur_robot_driver)/resources/rtde_output_recipe.txt" doc="Recipe file used for the RTDE-outputs. Only change this if you know what you're doing."/>
   <arg name="rtde_input_recipe_file" default="$(find ur_robot_driver)/resources/rtde_input_recipe.txt" doc="Recipe file used for the RTDE-inputs. Only change this if you know what you're doing."/>
@@ -75,16 +77,15 @@
     output="screen" args="$(arg controllers)" />
 
   <!-- load other controller -->
-  <node name="ros_control_stopped_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" args="--stopped $(arg stopped_controllers)" />
+
 
 
   <node name="controller_stopper" pkg="controller_stopper" type="node" respawn="false" output="screen">
     <remap from="robot_running" to="ur_hardware_interface/robot_program_running"/>
     <rosparam param="consistent_controllers">
-       - "cartesian_velocity_controller_sim"
+       <!-- - "cartesian_velocity_controller_sim" -->
        - "joint_state_controller"
-       - "speed_scaling_state_controller"
+       <!-- - "speed_scaling_state_controller" -->
        - "force_torque_sensor_controller"
        - "robot_status_controller"
     </rosparam>
