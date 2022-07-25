@@ -1,1 +1,18 @@
-theme: jekyll-theme-cayman
+# Setup
+title:        Design of COVID-19 Oropharyngeal-Swab Sampling end-effector based on visual-tactile sensor
+tagline:      Author1, Author2, Author3
+baseurl:      "/Oropharyngeal-Swab-Sampling-end-effector"
+paginate:     1
+locale:       "en"
+
+# About/contact
+author:
+  name:       MingshanHe
+  url:        MingshanHe.github.io
+
+# Gems
+gems:
+  - jekyll-paginate
+
+#Others
+markdown: kramdown
