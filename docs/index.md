@@ -1,4 +1,5 @@
-## Welcome to GitHub Pages
+## Design of COVID-19 Oropharyngeal-Swab Sampling end-effector based on visual-tactile sensor
+# Author1, Author2, Author3, Author4
 
 You can use the [editor on GitHub](https://github.com/MingshanHe/Oropharyngeal-Swab-Sampling-end-effector/edit/page/docs/index.md) to maintain and preview the content for your website in Markdown files.
 
