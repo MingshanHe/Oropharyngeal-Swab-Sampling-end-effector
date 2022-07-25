@@ -106,58 +106,62 @@ void Control_Strategy::Switch_Wrench(const int &cognition)
     ros::Rate loop_rate(30);
     geometry_msgs::Wrench msg;
     int ind;
+    int indx;
     switch (cognition)
     {
         case 0:
-            msg.force.x = (0.75 + force_x);
+            msg.force.x = (0.35 + force_x);
             msg.force.y = 0;
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((0.75+ force_x)>0)
+            while ((0.34+ force_x)>0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
                 loop_rate.sleep();
             }
+
             break;
         case 1:
-            msg.force.x = (-0.75 + force_x);
+            msg.force.x = (-0.375 + force_x);
             msg.force.y = 0;
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((-0.75+ force_x)<0)
+            while ((-0.35+ force_x)<0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
                 loop_rate.sleep();
             }
+
             break;
         case 2:
             msg.force.x = 0;
-            msg.force.y = (1 + force_y);
+            msg.force.y = (0.3 + force_y);
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((0.75 + force_y)>0)
+            while ((0.3 + force_y)>0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
                 loop_rate.sleep();
             }
+
             break;
         case 3:
             msg.force.x = 0;
-            msg.force.y = (-0.75 + force_y);
+            msg.force.y = (-0.3 + force_y);
             msg.force.z = 0;
             msg.torque.x = 0;
             msg.torque.y = 0;
             msg.torque.z = 0;
-            while ((-0.75 + force_y)<0)
+            while ((-0.3 + force_y)<0)
             {
                 Wrench_Pub.publish(msg);
                 ros::spinOnce();
@@ -196,7 +200,6 @@ void Control_Strategy::Switch_Wrench(const int &cognition)
                 ind--;
             }
             break;
-
         default:
             // std::cout<<"Need to Add."<<std::endl;
             break;
@@ -265,11 +268,116 @@ void Control_Strategy::Go(std::vector<double> Position)
     }
 }
 
+void Control_Strategy::Gitter()
+{
+    ros::Rate loop_rate(10);
+    geometry_msgs::Pose msg;
+
+    msg.position.x = pos_x + 0.005;
+    msg.position.y = pos_y;
+    msg.position.z = pos_z;
+    msg.orientation.x = ori_x;
+    msg.orientation.y = ori_y;
+    msg.orientation.z = ori_z;
+    msg.orientation.w = ori_w;
+    size_t i = 15;
+    while (i>0)
+    {
+        Cartesian_Pose_Pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        i--;
+    }
+    msg.position.x = pos_x - 0.01;
+    msg.position.y = pos_y;
+    msg.position.z = pos_z;
+    msg.orientation.x = ori_x;
+    msg.orientation.y = ori_y;
+    msg.orientation.z = ori_z;
+    msg.orientation.w = ori_w;
+    i = 15;
+    while (i>0)
+    {
+        Cartesian_Pose_Pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        i--;
+    }
+
+    msg.position.x = pos_x + 0.01;
+    msg.position.y = pos_y;
+    msg.position.z = pos_z;
+    msg.orientation.x = ori_x;
+    msg.orientation.y = ori_y;
+    msg.orientation.z = ori_z;
+    msg.orientation.w = ori_w;
+    i = 15;
+    while (i>0)
+    {
+        Cartesian_Pose_Pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        i--;
+    }
+    msg.position.x = pos_x - 0.01;
+    msg.position.y = pos_y;
+    msg.position.z = pos_z;
+    msg.orientation.x = ori_x;
+    msg.orientation.y = ori_y;
+    msg.orientation.z = ori_z;
+    msg.orientation.w = ori_w;
+    i = 15;
+    while (i>0)
+    {
+        Cartesian_Pose_Pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        i--;
+    }
+    msg.position.x = pos_x + 0.01;
+    msg.position.y = pos_y;
+    msg.position.z = pos_z;
+    msg.orientation.x = ori_x;
+    msg.orientation.y = ori_y;
+    msg.orientation.z = ori_z;
+    msg.orientation.w = ori_w;
+    i = 15;
+    while (i>0)
+    {
+        Cartesian_Pose_Pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        i--;
+    }
+    msg.position.x = pos_x - 0.005;
+    msg.position.y = pos_y;
+    msg.position.z = pos_z;
+    msg.orientation.x = ori_x;
+    msg.orientation.y = ori_y;
+    msg.orientation.z = ori_z;
+    msg.orientation.w = ori_w;
+    i = 15;
+    while (i>0)
+    {
+        Cartesian_Pose_Pub.publish(msg);
+        ros::spinOnce();
+        loop_rate.sleep();
+        i--;
+    }
+}
+
 
 void Control_Strategy::Cartesian_State_Cb(const cartesian_state_msgs::PoseTwistConstPtr &msg)
 {
     Cartesian_State <<  msg->pose.position.x, msg->pose.position.y, msg->pose.position.z,
                         msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w;
+    pos_x = msg->pose.position.x;
+    pos_y = msg->pose.position.y;
+    pos_z = msg->pose.position.z;
+    ori_x = msg->pose.orientation.x;
+    ori_y = msg->pose.orientation.y;
+    ori_z = msg->pose.orientation.z;
+    ori_w = msg->pose.orientation.w;
 }
 
 void Control_Strategy::ImageWrench_Cb(const geometry_msgs::Wrench &msg)

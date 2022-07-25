@@ -55,6 +55,7 @@ public:
     void Go_Home(void);
     void Go_Work(void);
     void Go(std::vector<double> Position);
+    void Gitter();
 public:
     void Cartesian_State_Cb(const cartesian_state_msgs::PoseTwistConstPtr &msg);
     void ImageWrench_Cb(const geometry_msgs::Wrench &msg);
@@ -84,6 +85,8 @@ private:
 
 
     Vector7d                                                Cartesian_State;
+    double                                                  pos_x, pos_y, pos_z;
+    double                                                  ori_x, ori_y, ori_z, ori_w;
 
 private:
     Filter                                                  filter;

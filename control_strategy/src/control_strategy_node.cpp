@@ -16,17 +16,17 @@ int main(int argc, char **argv)
 
     Control_Strategy control_strategy(nh, workspace_limits, home_pose, work_start_pose);
 
-    control_strategy.Switch_Controller(0);
-    sleep(5);
+    // control_strategy.Switch_Controller(0);
+    sleep(2);
     // control_strategy.Go_Home();
     // std::cout<<"Go Home Successfully."<<std::endl;
     // sleep(5);
     // control_strategy.Go_Work();
     // std::cout<<"Go Work Successfully."<<std::endl;
     // sleep(5);
-    control_strategy.Go(pose1);
-    std::cout<<"Go1 Successfully."<<std::endl;
-    sleep(7);
+    // control_strategy.Go(pose1);
+    // std::cout<<"Go1 Successfully."<<std::endl;
+    // sleep(7);
     // control_strategy.Go(pose2);
     // std::cout<<"Go2 Successfully."<<std::endl;
     // sleep(7);
@@ -35,18 +35,28 @@ int main(int argc, char **argv)
     // sleep(7);
 
     // control_strategy.Switch_Controller(3);
-    // control_strategy.Switch_Wrench(0);
-    // control_strategy.Switch_Wrench(4);
-    // std::cout<<"1 complete"<<std::endl;
-    // control_strategy.Switch_Wrench(1);
-    // control_strategy.Switch_Wrench(5);
-    // std::cout<<"2 complete"<<std::endl;
-    // control_strategy.Switch_Wrench(2);
-    // control_strategy.Switch_Wrench(4);
-    // std::cout<<"3 complete"<<std::endl;
+    control_strategy.Switch_Wrench(0);
+    control_strategy.Switch_Controller(2);
+    control_strategy.Gitter();
+    control_strategy.Switch_Controller(3);
+    control_strategy.Switch_Wrench(4);
+    std::cout<<"Right Complete!"<<std::endl;
+    control_strategy.Switch_Wrench(1);
+    control_strategy.Switch_Controller(2);
+    control_strategy.Gitter();
+    control_strategy.Switch_Controller(3);
+    control_strategy.Switch_Wrench(5);
+    std::cout<<"Left Complete!"<<std::endl;
+    control_strategy.Switch_Wrench(2);
+    control_strategy.Switch_Controller(2);
+    control_strategy.Gitter();
+    control_strategy.Switch_Controller(3);
+    control_strategy.Switch_Wrench(4);
+    std::cout<<"Down complete!"<<std::endl;
     // control_strategy.Switch_Wrench(3);
     // control_strategy.Switch_Wrench(5);
-    // std::cout<<"4 complete"<<std::endl;
+    // std::cout<<"4 complete!"<<std::endl;
+    std::cout<<"All complete!"<<std::endl;
     ros::Rate loop_rate(10);
     
 
