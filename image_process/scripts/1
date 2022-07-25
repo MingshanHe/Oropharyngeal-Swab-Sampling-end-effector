@@ -178,20 +178,6 @@ def main():
     cap.set(3,1280)
     r=0
 
-    falg = True
-    while not rospy.is_shutdown() and falg:
-        ret,img = cap.read()
-        img = cv2.resize(img,(640,480))
-        pred = NNpredict(model,img)
-        img = cv2.flip(img,1,dst=None) #vertical mirror
-        pred = cv2.flip(pred,1,dst=None) #vertical mirror
-        x_,y_,img,pred,radius_ = NNpostprocess(img,pred)
-        # center=[400,270]
-        print('center is: (', x_,',',y_,') and radius is: (',radius_,')')
-        if input('Input "Enter" to choose this center') == '':
-            falg = False
-            center=[x_,y_]
-            radius = radius_
     fourcc1 = cv2.VideoWriter_fourcc(*'XVID')
     fourcc2 = cv2.VideoWriter_fourcc(*'XVID')
     out1 = cv2.VideoWriter('output1.avi',fourcc1, 30.0, (640,480))
@@ -210,48 +196,27 @@ def main():
         # center=[400,270]
 
         # center = [345,205]
-        _radius_ = [40,200]
+        # _radius_ = [40,200]
 
-        activate_ = DetectInRegion(center,_radius_[0],_radius_[1],(x,y))
-        # print(activate_)
-        point = CreatePoints(center, _radius_[0],_radius_[1],select='1')
-        points = np.array(point,np.int32)
-        points = points.reshape((-1,1,2))
-        cv2.polylines(img,[points],True,activate_[0])
-        point = CreatePoints(center, _radius_[0],_radius_[1],select='2')
-        points = np.array(point,np.int32)
-        points = points.reshape((-1,1,2))
-        cv2.polylines(img,[points],True,activate_[1])
-        point = CreatePoints(center, _radius_[0],_radius_[1],select='3')
-        points = np.array(point,np.int32)
-        points = points.reshape((-1,1,2))
-        cv2.polylines(img,[points],True,activate_[2])
-        point = CreatePoints(center, _radius_[0],_radius_[1],select='4')
-        points = np.array(point,np.int32)
-        points = points.reshape((-1,1,2))
-        cv2.polylines(img,[points],True,activate_[3])
+        # activate_ = DetectInRegion(center,_radius_[0],_radius_[1],(x,y))
+        # # print(activate_)
+        # point = CreatePoints(center, _radius_[0],_radius_[1],select='1')
+        # points = np.array(point,np.int32)
+        # points = points.reshape((-1,1,2))
+        # cv2.polylines(img,[points],True,activate_[0])
+        # point = CreatePoints(center, _radius_[0],_radius_[1],select='2')
+        # points = np.array(point,np.int32)
+        # points = points.reshape((-1,1,2))
+        # cv2.polylines(img,[points],True,activate_[1])
+        # point = CreatePoints(center, _radius_[0],_radius_[1],select='3')
+        # points = np.array(point,np.int32)
+        # points = points.reshape((-1,1,2))
+        # cv2.polylines(img,[points],True,activate_[2])
+        # point = CreatePoints(center, _radius_[0],_radius_[1],select='4')
+        # points = np.array(point,np.int32)
+        # points = points.reshape((-1,1,2))
+        # cv2.polylines(img,[points],True,activate_[3])
 
-        # if (fabs(center[0]-x)<40) and (fabs(center[1]-y)<40):
-
-        #     wrench = Wrench()
-        #     wrench.force.x = (center[0]-x)/120
-        #     wrench.force.y = (center[1]-y)/120
-        #     wrench.force.z = (radius-radius_)/10
-        #     wrench.torque.x = 0
-        #     wrench.torque.y = 0
-        #     wrench.torque.z = 0
-        #     Twist_Pub.publish(wrench)
-        #     rate.sleep()
-        # else:
-        #     wrench = Wrench()
-        #     wrench.force.x = (center[0]-x)/120
-        #     wrench.force.y = (y-center[1])/120
-        #     wrench.force.z = 0
-        #     wrench.torque.x = 0
-        #     wrench.torque.y = 0
-        #     wrench.torque.z = 0
-        #     Twist_Pub.publish(wrench)
-        #     rate.sleep()
 
 
         out2.write(img)

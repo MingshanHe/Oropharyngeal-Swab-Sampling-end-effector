@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   detection_msgs
+  cartesian_state_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES image_process
- CATKIN_DEPENDS std_msgs detection_msgs
+ CATKIN_DEPENDS std_msgs detection_msgs cartesian_state_msgs
 #  DEPENDS system_lib
 )
 
@@ -164,9 +165,11 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/FCN_ROS.py
+  scripts/FCN_TEST.py
   scripts/realsense.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
 catkin_install_python(PROGRAMS 
   scripts/DTC_ROS.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
