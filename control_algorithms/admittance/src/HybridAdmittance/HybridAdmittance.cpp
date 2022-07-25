@@ -38,8 +38,6 @@ Admittance::Admittance(ros::NodeHandle &n,
   desired_pose_position_ << desired_pose_.topRows(3);
   desired_pose_orientation_.coeffs() << desired_pose_.bottomRows(4)/desired_pose_.bottomRows(4).norm();
 
-
-
   while (nh_.ok() && !arm_position_(0)) {
     ROS_WARN_THROTTLE(1, "Waiting for the state of the arm...");
     ros::spinOnce();
