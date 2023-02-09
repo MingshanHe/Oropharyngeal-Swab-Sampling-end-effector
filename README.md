@@ -10,9 +10,5 @@
 
 <img src="Images/2.png" style="zoom:40%;" />
 
-  We basiclly use the compliant control algorithm and complete several tasts based on the ROS platform. In this figure, it has shown the whole connections and details in this research. The camera and sensor are used to contact with the external environment and acquire the state of data. And then all of the sensor data will be used in the control strategy within the preprocess and detect algorithms. The output of the control algorithm is sent to the robotic arm through the controller in ROS. Then the robotic arm works to the environment acting as the plant.
-
-
-
-
+  We basiclly use the compliant control algorithm and complete the sampling tast developing under the ROS platform. In this figure, it has shown the whole connections in the ROS and details in this research. The camera and sensor are used to contact with the external environment and acquire the state of data. And then all of the sensor data will be used in the control strategy within the preprocess and detect algorithms. The output of the control algorithm is sent to the robotic arm through the self defineded controller. Then the robotic arm works to the environment acting as the plant. The control period is under the 8 milliseconds and the code is running under the PC desktop with RTOS and CUDA which can ensure the security and improve the performance of computer vision computing separately.
 
